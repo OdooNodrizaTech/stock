@@ -1,6 +1,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class CrmLead(models.Model):
@@ -11,6 +11,13 @@ class CrmLead(models.Model):
         string="Expeditions",
     )
 
+    @api.multi
     def _compute_shipping_expedition_count(self):
         for item in self:
-            item.shipping_expedition_count = len(self.env['shipping.expedition'].search([('order_id', 'in', item.order_ids.ids)]))
+            item.shipping_expedition_count = len(
+                self.env['shipping.expedition'].search(
+                    [
+                        ('order_id', 'in', item.order_ids.ids)
+                    ]
+                )
+            )

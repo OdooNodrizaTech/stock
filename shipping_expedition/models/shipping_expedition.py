@@ -3,6 +3,7 @@
 from odoo import api, fields, models
 from datetime import datetime
 
+
 class ShippingExpedition(models.Model):
     _name = 'shipping.expedition'
     _description = 'Shipping Expedicion'
@@ -29,19 +30,19 @@ class ShippingExpedition(models.Model):
         readonly=True
     )
     user_id = fields.Many2one(
-        comodel_name='res.users',        
+        comodel_name='res.users',
         string='User',
         related='picking_id.sale_id.user_id',
         store=False,
         readonly=True
-    )    
+    )
     carrier_id = fields.Many2one(
-        comodel_name='delivery.carrier',        
+        comodel_name='delivery.carrier',
         string='Carrier',
         related='picking_id.carrier_id',
         store=False,
         readonly=True
-    )        
+    )
     carrier_type = fields.Selection(
         string='Carrier type',
         related='picking_id.carrier_id.carrier_type',
@@ -54,16 +55,16 @@ class ShippingExpedition(models.Model):
         related='picking_id.partner_id',
         store=False,
         readonly=True
-    )    
+    )
     code = fields.Char(
         string='Code'
     )
     delivery_code = fields.Char(
         string='Delivery code'
-    )             
+    )
     date = fields.Date(
         string='Date'
-    )    
+    )
     hour = fields.Char(
         string='Hour'
     )
@@ -72,14 +73,14 @@ class ShippingExpedition(models.Model):
     )
     state = fields.Selection(
         selection=[
-            ('error','Error'), 
-            ('generate','Generate'),
-            ('shipped','Shipped'),
-            ('in_delegation','In delegation'),
-            ('incidence','Incidence'),
-            ('in_transit','In transit'),
-            ('delivered','Delivered'),
-            ('canceled','Canceled'),
+            ('error', 'Error'),
+            ('generate', 'Generate'),
+            ('shipped', 'Shipped'),
+            ('in_delegation', 'In delegation'),
+            ('incidence', 'Incidence'),
+            ('in_transit', 'In transit'),
+            ('delivered', 'Delivered'),
+            ('canceled', 'Canceled'),
         ],
         string='State'
     )
@@ -107,72 +108,72 @@ class ShippingExpedition(models.Model):
     ir_attachment_id = fields.Many2one(
         comodel_name='ir.attachment',
         string='Attachment'
-    )            
-    
+    )
+
     @api.model
     def create(self, values):
-        record = super(ShippingExpedition, self).create(values)
+        res = super(ShippingExpedition, self).create(values)
         # add partner_id follower
-        if record.partner_id:
+        if res.partner_id:
             reg = {
-                'res_id': record.id,
+                'res_id': res.id,
                 'res_model': 'shipping.expedition',
-                'partner_id': record.partner_id.id,
+                'partner_id': res.partner_id.id,
                 'subtype_ids': [(6, 0, [1])],
             }
             self.env['mail.followers'].create(reg)
         # add user_id follower
-        if record.user_id:
+        if res.user_id:
             mail_followers_ids_check = self.env['mail.followers'].search(
                 [
                     ('res_model', '=', 'shipping.expedition'),
-                    ('res_id', '=', record.id),
-                    ('partner_id', '=', record.user_id.partner_id.id)
+                    ('res_id', '=', res.id),
+                    ('partner_id', '=', res.user_id.partner_id.id)
                 ]
             )
-            if mail_followers_ids_check == False:
+            if not mail_followers_ids_check:
                 reg = {
-                    'res_id': record.id,
+                    'res_id': res.id,
                     'res_model': 'shipping.expedition',
-                    'partner_id': record.user_id.partner_id.id,
-                    'subtype_ids': [(6, 0, [1])],                                              
+                    'partner_id': res.user_id.partner_id.id,
+                    'subtype_ids': [(6, 0, [1])],
                 }
                 self.env['mail.followers'].create(reg)
         # check remove create uid
-        if record.user_id:
-            if record.user_id.id != record.create_uid.id:
-                mail_followers_ids = self.env['mail.followers'].search(
+        if res.user_id:
+            if res.user_id.id != res.create_uid.id:
+                followers_ids = self.env['mail.followers'].search(
                     [
                         ('res_model', '=', 'shipping.expedition'),
-                        ('res_id', '=', record.id)
+                        ('res_id', '=', res.id)
                     ]
                 )
-                if mail_followers_ids:
-                    for mail_follower_id in mail_followers_ids:
-                        if mail_follower_id.partner_id.id == record.create_uid.partner_id.id:
-                            mail_follower_id.sudo().unlink()
+                if followers_ids:
+                    for followers_id in followers_ids:
+                        if followers_id.partner_id.id == res.create_uid.partner_id.id:
+                            followers_id.sudo().unlink()
         # record
-        return record
-    
-    @api.model    
+        return res
+
+    @api.model
     def cron_shipping_expeditions_update_state(self):
         current_date = datetime.today()
-        
-        shipping_expedition_ids = self.env['shipping.expedition'].search(
+
+        expedition_ids = self.env['shipping.expedition'].search(
             [
                 ('state', 'not in', ('delivered', 'canceled')),
                 ('carrier_id.carrier_type', 'in', ('cbl', 'txt', 'tsb', 'nacex')),
                 ('date', '<', current_date.strftime("%Y-%m-%d"))
             ]
         )
-        if shipping_expedition_ids:
-            for shipping_expedition_id in shipping_expedition_ids:
-                shipping_expedition_id.action_update_state()
-                
-    @api.one
+        if expedition_ids:
+            for expedition_id in expedition_ids:
+                expedition_id.action_update_state()
+
+    @api.multi
     def action_update_state(self):
-        return False        
-    
-    @api.one    
+        return False
+
+    @api.multi
     def action_error_update_state_expedition(self, res):
-        return                                    
+        return False

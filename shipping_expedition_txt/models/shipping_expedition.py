@@ -1,23 +1,20 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-from odoo import api, exceptions, fields, models
-
-from datetime import datetime
-import datetime
+from odoo import api, models, _
 
 import logging
-_logger = logging.getLogger(__name__)
-
 from bs4 import BeautifulSoup
 import requests
+_logger = logging.getLogger(__name__)
+
 
 class ShippingExpedition(models.Model):
     _inherit = 'shipping.expedition'
-            
-    @api.one
+
+    @api.multi
     def define_delegation_phone_txt(self):
         delegations_txt = {
             'A CORUÑA': {'phone': '981078907'},
-            'ALBACETE': {'phone': '967213921','phone2': '967592544'},            
+            'ALBACETE': {'phone': '967213921', 'phone2': '967592544'},
             'ALCAÑIZ': {'phone': '978830655'},
             'ALGECIRAS': {'phone': '956698730'},
             'ALICANTE': {'phone': '965105294'},
@@ -63,10 +60,10 @@ class ShippingExpedition(models.Model):
             'PAMPLONA': {'phone': '948314381'},
             'PENDES': {'phone': '935169181'},
             'PONFERRADA': {'phone': '987419305'},
-            'PUERTO DE SANTA MARIA': {'phone': '956858502'},            
+            'PUERTO DE SANTA MARIA': {'phone': '956858502'},
             'SAN SEBASTIAN': {'phone': '943377575'},
             'SALAMANCA': {'phone': '923250695'},
-            'SANTANDER': {'phone': '942334422'},            
+            'SANTANDER': {'phone': '942334422'},
             'SANTIAGO DE COMPOSTELA': {'phone': '981572341'},
             'SANTA CRUZ DE TENERIFE': {'phone': '922622640'},
             'SEGOVIA': {'phone': '921447152'},
@@ -77,130 +74,161 @@ class ShippingExpedition(models.Model):
             'TORRIJOS': {'phone': '925761156'},
             'VALENCIA': {'phone': '961667593'},
             'VALLADOLID': {'phone': '983313876'},
-            'VIC': {'phone': '938893217'},            
-            'VIGO': {'phone': '986488100'},                                                            
+            'VIC': {'phone': '938893217'},
+            'VIGO': {'phone': '986488100'},
             'VITORIA': {'phone': '945292900'},
             'ZAMORA': {'phone': '980045035'},
-            'ZARAGOZA': {'phone': '976144588'},                                                                                                                                                                                                                                                                                                                                                                                                                       
+            'ZARAGOZA': {'phone': '976144588'}
         }
-        if self.delegation_name and self.delegation_name != "":
-            delegation_name_search = str(self.delegation_name)
-            # stranger_things
-            if 'TORRIJOS' in delegation_name_search: 
-                delegation_name_search = 'TORRIJOS'
-            elif 'CIUDAD REAL' in delegation_name_search: 
-                delegation_name_search = 'CIUDAD REAL'
-            elif 'LEON' in delegation_name_search: 
-                delegation_name_search = 'LEON'
-                            
-            if delegation_name_search == 'TENERIFE MARITIMO':
-                delegation_name_search = 'SANTA CRUZ DE TENERIFE'                                                                          
-                
-            if delegation_name_search in delegations_txt:
-                self.delegation_phone = delegations_txt[delegation_name_search]['phone']
-            else:
-                # slack.message
-                web_base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')                
-                attachments = [
-                    {
-                        "title": 'No se ha encontrado el telefono de TXT para la delegacion *%s*' % delegation_name_search,
-                        "color": "#ff0000",
-                        "fallback": "Ver expedicion %s/web?#id=%s&view_type=form&model=shipping.expedition" % (web_base_url, self.id),
-                        "actions": [
-                            {
-                                "type": "button",
-                                "text": "Ver expedicion",
-                                "url": "%s/web?#id=%s&view_type=form&model=shipping.expedition" % (web_base_url, self.id)
-                            }
-                        ]                    
+        for item in self:
+            if item.delegation_name and item.delegation_name != "":
+                dns = str(item.delegation_name)
+                # define
+                web_base_url = self.env[
+                    'ir.config_parameter'
+                ].sudo().get_param('web.base.url')
+                model_item = "shipping.expedition"
+                url_item = "%s/web?#id=%s&view_type=form&model=%s" % (
+                    web_base_url,
+                    item.id,
+                    model_item
+                )
+                # stranger_things
+                if 'TORRIJOS' in dns:
+                    dns = 'TORRIJOS'
+                elif 'CIUDAD REAL' in dns:
+                    dns = 'CIUDAD REAL'
+                elif 'LEON' in dns:
+                    dns = 'LEON'
+
+                if dns == 'TENERIFE MARITIMO':
+                    dns = 'SANTA CRUZ DE TENERIFE'
+
+                if dns in delegations_txt:
+                    item.delegation_phone = delegations_txt[dns]['phone']
+                else:
+                    # slack.message
+                    attachments = [
+                        {
+                            "title": _('No se ha encontrado el telefono de '
+                                       'TXT para la delegacion *%s*') % dns,
+                            "color": "#ff0000",
+                            "fallback": _("Ver expedicion %s") % url_item,
+                            "actions": [
+                                {
+                                    "type": "button",
+                                    "text": _("Ver expedicion"),
+                                    "url": url_item
+                                }
+                            ]
+                        }
+                    ]
+                    vals = {
+                        'attachments': attachments,
+                        'model': self._inherit,
+                        'res_id': self.id,
+                        'channel': self.env['ir.config_parameter'].sudo().get_param(
+                            'slack_arelux_log_almacen_channel'
+                        ),
                     }
-                ]                
-                vals = {
-                    'attachments': attachments,
-                    'model': self._inherit,
-                    'res_id': self.id,
-                    'channel': self.env['ir.config_parameter'].sudo().get_param('slack_arelux_log_almacen_channel'),                                                         
-                }                        
-                self.env['slack.message'].sudo().create(vals)
-    
-    @api.one
+                    self.env['slack.message'].sudo().create(vals)
+
+    @api.multi
     def action_update_state(self):
         # operations
-        if self.carrier_id.carrier_type == 'txt':
-            self.action_update_state_txt()
+        for item in self:
+            if item.carrier_id.carrier_type == 'txt':
+                item.action_update_state_txt()
         # return
         return super(ShippingExpedition, self).action_update_state()
-        
-    @api.one
+
+    @api.multi
     def action_update_state_txt(self):
+        self.ensure_one()
         res = self.action_update_state_txt_real()[0]
         # operations
         if res['errors']:
-            _logger.info(res)  
-            self.action_error_update_state_expedition(res)# Fix error
+            _logger.info(res)
+            self.action_error_update_state_expedition(res)
         else:
             # fecha_entrega
             if 'fecha_entrega' in res['return']:
-                if '/' in res['return']['fecha_entrega']: 
-                    fecha_split = res['return']['fecha_entrega'].split('/')
-                    self.date = fecha_split[2]+'-'+fecha_split[1]+'-'+fecha_split[0]
+                if '/' in res['return']['fecha_entrega']:
+                    res_fe = res['return']['fecha_entrega']
+                    self.date = '%s-%s-%s' % (
+                        res_fe.split('/')[2],
+                        res_fe.split('/')[1],
+                        res_fe.split('/')[0]
+                    )
             # num_albaran
-            if 'num_albaran' in res['return']:                                 
+            if 'num_albaran' in res['return']:
                 self.code = res['return']['num_albaran']
             # observaciones
-            if 'observaciones' in res['return']:                 
+            if 'observaciones' in res['return']:
                 self.observations = res['return']['observaciones']
             # destino_expedicion1
-            if 'destino_expedicion1' in res['return']:                 
-                self.delegation_name = res['return']['destino_expedicion1']                
-                self.define_delegation_phone_txt()                                
+            if 'destino_expedicion1' in res['return']:
+                self.delegation_name = res['return']['destino_expedicion1']
+                self.define_delegation_phone_txt()
             # state
             state_old = self.state
             state_new = False
-            
-            if res['return']['estado_expedicion'] == "ENTREGADO":
+            res_ee = res['return']['estado_expedicion']
+            if res_ee == "ENTREGADO":
                 state_new = "delivered"
-            elif res['return']['estado_expedicion'] in ["EN REPARTO", "EN TRANSITO"]:
+            elif res_ee in ["EN REPARTO", "EN TRANSITO"]:
                 state_new = "in_transit"
-            elif res['return']['estado_expedicion'] in ["INCIDENCIA", "EN INCIDENCIA"]:
+            elif res_ee in ["INCIDENCIA", "EN INCIDENCIA"]:
                 state_new = "incidence"
             # state update
             if state_new and state_new != state_old:
                 self.state = state_new
-    
-    @api.one
+
+    @api.multi
     def action_update_state_txt_real(self):
+        self.ensure_one()
         response = {
-            'errors': True, 
-            'error': "Pendiente de realizar", 
-            'return': "",
-        }            
-        
+            'errors': True,
+            'error': "Pendiente de realizar",
+            'return': ""
+        }
         page = requests.get(self.url_info)
-        soup = BeautifulSoup(page.content, 'html.parser')                        
-        estado_expedicion_input = soup.find('input', {'id': 'TxtEstadoExpedicion'})
-        if estado_expedicion_input != None:
+        soup = BeautifulSoup(page.content, 'html.parser')
+        eei = soup.find('input', {'id': 'TxtEstadoExpedicion'})
+        if eei is not None:
             response['errors'] = False
-            response['return'] = {}            
-            response['return']['estado_expedicion'] = estado_expedicion_input.get('value')#Fix
-        
+            response['return'] = {}
+            response['return']['estado_expedicion'] = eei.get('value')
+            ee = response['return']['estado_expedicion']
             inputs = soup.find_all('input')
-            for input_field in inputs:                
-                if input_field['id']=='TxtDestinoExpedicion1':
-                    response['return']['destino_expedicion1'] = input_field['value']
-                elif input_field['id']=="TxtNumalbaran":
-                    response['return']['num_albaran'] = input_field['value']
-                elif input_field['id']=="TxtEstadoExpedicion":
-                    response['return']['estado_expedicion'] = input_field['value']
-                elif input_field['id']=="TxtFechaSalida":
-                    response['return']['fecha_salida'] = input_field['value']
-                elif input_field['id']=="TxtFechaEntrega":
-                    if response['return']['estado_expedicion']=="ENTREGADO":
-                        response['return']['fecha_entrega'] = input_field['value']                    
-                elif input_field['id']=="TxtObservaciones":
-                    response['return']['observaciones'] = input_field['value']                        
-        
+            for input_field in inputs:
+                if input_field['id'] == 'TxtDestinoExpedicion1':
+                    response['return'][
+                        'destino_expedicion1'
+                    ] = input_field['value']
+                elif input_field['id'] == "TxtNumalbaran":
+                    response['return'][
+                        'num_albaran'
+                    ] = input_field['value']
+                elif input_field['id'] == "TxtEstadoExpedicion":
+                    response['return'][
+                        'estado_expedicion'
+                    ] = input_field['value']
+                elif input_field['id'] == "TxtFechaSalida":
+                    response['return'][
+                        'fecha_salida'
+                    ] = input_field['value']
+                elif input_field['id'] == "TxtFechaEntrega":
+                    if ee == "ENTREGADO":
+                        response['return'][
+                            'fecha_entrega'
+                        ] = input_field['value']
+                elif input_field['id'] == "TxtObservaciones":
+                    response['return'][
+                        'observaciones'
+                    ] = input_field['value']
+
             if 'num_albaran' not in response['return']:
                 response['errors'] = True
         # return
-        return response                                                                    
+        return response

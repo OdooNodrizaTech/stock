@@ -4,8 +4,8 @@ from odoo import fields, models
 
 
 class DeliveryCarrier(models.Model):
-    _inherit = 'delivery.carrier'        
+    _inherit = 'delivery.carrier'
 
     cbl_sender_customer = fields.Char(
         string='Cbl sender customer'
-    )                                                                                               
+    )

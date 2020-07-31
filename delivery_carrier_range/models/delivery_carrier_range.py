@@ -6,19 +6,19 @@ from odoo import fields, models
 class DeliveryCarrierRange(models.Model):
     _name = 'delivery.carrier.range'
     _description = 'Delivery Carrier Range'
-            
+
     carrier_id = fields.Many2one(
-        comodel_name='delivery.carrier',        
+        comodel_name='delivery.carrier',
         string='Carrier',
     )
     country_id = fields.Many2one(
-        comodel_name='res.country',        
+        comodel_name='res.country',
         string='Country',
     )
     state_id = fields.Many2one(
-        comodel_name='res.country.state',        
+        comodel_name='res.country.state',
         string='Country state',
-    )        
+    )
     weight_range_start = fields.Float(
         string='Range start'
     )
@@ -27,4 +27,4 @@ class DeliveryCarrierRange(models.Model):
     )
     price = fields.Float(
         string='Price'
-    )                            
+    )

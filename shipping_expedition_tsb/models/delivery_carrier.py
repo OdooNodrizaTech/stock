@@ -4,7 +4,7 @@ from odoo import fields, models
 
 
 class DeliveryCarrier(models.Model):
-    _inherit = 'delivery.carrier'        
+    _inherit = 'delivery.carrier'
 
     tsb_sender_customer = fields.Char(
         string='Tsb sender customer'
@@ -26,4 +26,4 @@ class DeliveryCarrier(models.Model):
     )
     tsb_ftp_directory_download = fields.Char(
         string='Tsb Ftp directory download'
-    )                                                                             
+    )

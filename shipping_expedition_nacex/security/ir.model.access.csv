@@ -1,9 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_nacex_service_group_salesman,nacex.service.group.salesman,model_nacex_service_group,base.group_sale_salesman,1,0,0,0
-access_nacex_service_group_manager,nacex.service.group.manager,model_nacex_service_group,base.group_sale_manager,1,1,1,1
-access_nacex_license_salesman,nacex.license.salesman,model_nacex_license,base.group_sale_salesman,1,0,0,0
-access_nacex_license_manager,nacex.license.manager,model_nacex_license,base.group_sale_manager,1,1,1,1
-access_nacex_service_group_stock_user,nacex.service.group.stock_user,model_nacex_service_group,stock.group_stock_user,1,0,0,0
-access_nacex_service_group_stock_manager,nacex.service.group.stock_manager,model_nacex_service_group,stock.group_stock_manager,1,1,1,1
-access_nacex_license_stock_user,nacex.license.stock_user,model_nacex_license,stock.group_stock_user,1,0,0,0
-access_nacex_license_stock_manager,nacex.license.stock_manager,model_nacex_license,stock.group_stock_manager,1,1,1,1

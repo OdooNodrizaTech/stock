@@ -1,6 +1,6 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class SaleOrder(models.Model):
@@ -15,6 +15,13 @@ class SaleOrder(models.Model):
         string="Expeditions",
     )
 
+    @api.multi
     def _compute_shipping_expedition_count(self):
         for item in self:
-            item.shipping_expedition_count = len(self.env['shipping.expedition'].search([('order_id', '=', item.id)]))
+            item.shipping_expedition_count = len(
+                self.env['shipping.expedition'].search(
+                    [
+                        ('order_id', '=', item.id)
+                    ]
+                )
+            )
