@@ -1,3 +1,4 @@
+[![Build Status](https://runbot.nodrizatech.com/runbot/badge/10/12.0.svg)](https://runbot.nodrizatech.com/runbot/repo/https-github-com-odoonodrizatech-stock-10)
 [![Build Status](https://travis-ci.org/OdooNodrizaTech/stock.svg?branch=12.0)](https://travis-ci.org/OdooNodrizaTech/stock)
 [![codecov](https://codecov.io/gh/OdooNodrizaTech/stock/branch/12.0/graph/badge.svg)](https://codecov.io/gh/OdooNodrizaTech/stock)
 
