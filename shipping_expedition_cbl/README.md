@@ -1,19 +1,15 @@
 El módulo contiene el desarrollo que permite realizar toda la integración respecto a CBL
 
 ## odoo.conf
-```
-aws_access_key_id=xxxx
-aws_secret_key_id=xxxxx
-aws_region_name=eu-west-1
-``` 
+- aws_access_key_id=xxxx
+- aws_secret_key_id=xxxxx
+- aws_region_name=eu-west-1
 
 ## Parámetros de configuración
-```
-cbl_sender_customer
-cbl_s3_bucket
-cbl_s3_folder
-cbl_expedition_info_template_id
-``` 
+- cbl_sender_customer
+- cbl_s3_bucket
+- cbl_s3_folder
+- cbl_expedition_info_template_id
 
 ## Crones
 
