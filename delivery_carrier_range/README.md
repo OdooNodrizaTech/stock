@@ -1,9 +1,7 @@
 El módulo contiene el desarrollo que permite realizar algunas mejoras respecto a stock_picking.
 
 ## Parámetros de configuración
-```
-arelux_stock_picking_delivery_carrier_default_carrier_id
-```
+- arelux_stock_picking_delivery_carrier_default_carrier_id
 
 Se añade el apartado del menú "Rangos precios" en Inventario > Configuración > Carriers, apartado que permite definir rangos de precios por transportistas.
 
