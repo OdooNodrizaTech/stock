@@ -1,19 +1,15 @@
 El módulo contiene el desarrollo que permite realizar toda la integración respecto a TXT
 
 ## odoo.conf
-```
-aws_access_key_id=xxxx
-aws_secret_key_id=xxxxx
-aws_region_name=eu-west-1
-``` 
+- aws_access_key_id=xxxx
+- aws_secret_key_id=xxxxx
+- aws_region_name=eu-west-1
 
 ## Parámetros de configuración
-```
-txt_sender_customer
-txt_s3_bucket
-txt_s3_folder
-txt_expedition_info_template_id
-``` 
+- txt_sender_customer
+- txt_s3_bucket
+- txt_s3_folder
+- txt_expedition_info_template_id
 
 ## Crones
 
