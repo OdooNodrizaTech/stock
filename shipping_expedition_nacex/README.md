@@ -1,11 +1,9 @@
 El módulo contiene el desarrollo que permite realizar toda la integración respecto a NACEX
 
 ## odoo.conf
-```
-#nacex
-nacex_username=GRUPOARELUX
-nacex_password=xxxx
-``` 
+- #nacex
+- nacex_username=GRUPOARELUX
+- nacex_password=xxxx
 
 En el apartado de Inventario > Configuración > Carriers se añade el apartado "Nacex" desde donde se realizan las opciones de configuración correspondientes.
 
