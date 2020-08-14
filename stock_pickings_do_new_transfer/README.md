@@ -1,9 +1,7 @@
 Auto-valida los albaranes de un picking_type_id definido
 
 ## Parámetros de configuración
-```
-stock_pickings_do_new_transfer_picking_type_id
-```
+- stock_pickings_do_new_transfer_picking_type_id
 
 ## Crones
 
